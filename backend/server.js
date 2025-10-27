@@ -11,12 +11,18 @@ const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_KEY;
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-// Middleware
+// Middleware CORS - SUPER PERMISSIVO (Produção)
 app.use(cors({
-  origin: ['http://localhost:8000', 'http://127.0.0.1:5500', 'http://localhost:3000', 'file://'],
-  credentials: true
+  origin: function (origin, callback) {
+    // Permite TODAS as origens em produção
+    callback(null, true);
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'Accept']
 }));
-app.use(express.json());
+
+app.options('*', cors());
 
 // Rota para buscar todas as práticas
 app.get('/api/practices', async (req, res) => {
@@ -150,3 +156,4 @@ app.listen(PORT, '0.0.0.0', () => {
   console.log(`📊 Supabase conectado!`);
 
 });
+
