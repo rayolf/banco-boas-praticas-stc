@@ -11,6 +11,10 @@ const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_KEY;
 const supabase = createClient(supabaseUrl, supabaseKey);
 
+// Middleware para parsing JSON - ADICIONAR ESTA LINHA
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+
 // Middleware CORS - SUPER PERMISSIVO (Produção)
 app.use(cors({
   origin: function (origin, callback) {
@@ -47,9 +51,19 @@ app.get('/api/practices', async (req, res) => {
   }
 });
 
-// Rota para criar nova prática
+// Rota para criar nova prática - VERSÃO CORRIGIDA
 app.post('/api/practices', async (req, res) => {
   try {
+    console.log('Body recebido:', req.body); // Para debug
+    
+    // Verificação mais robusta do body
+    if (!req.body || Object.keys(req.body).length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Corpo da requisição vazio ou inválido'
+      });
+    }
+
     const { name, management, practice, date } = req.body;
 
     if (!name || !management || !practice || !date) {
@@ -62,16 +76,17 @@ app.post('/api/practices', async (req, res) => {
     const { data, error } = await supabase
       .from('practices')
       .insert([
-        {
-          name,
-          management,
-          practice,
-          date
-        }
+        { name, management, practice, date }
       ])
       .select();
 
-    if (error) throw error;
+    if (error) {
+      console.log('Erro Supabase:', error);
+      return res.status(400).json({
+        success: false,
+        message: 'Erro no banco de dados: ' + error.message
+      });
+    }
 
     res.status(201).json({
       success: true,
@@ -79,6 +94,7 @@ app.post('/api/practices', async (req, res) => {
       data: data[0]
     });
   } catch (error) {
+    console.log('Erro geral:', error);
     res.status(400).json({
       success: false,
       message: 'Erro ao cadastrar prática: ' + error.message
@@ -156,4 +172,5 @@ app.listen(PORT, '0.0.0.0', () => {
   console.log(`📊 Supabase conectado!`);
 
 });
+
 
