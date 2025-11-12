@@ -13,10 +13,15 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 
 // Middleware
 app.use(cors({
-  origin: ['http://localhost:8000', 'http://127.0.0.1:5500', 'http://localhost:3000', 'file://'],
-  credentials: true
+  origin: [
+    'https://marvelous-manatee-00afc2.netlify.app',
+    'http://localhost:8000', 
+    'http://127.0.0.1:5500', 
+    'http://localhost:3000'
+  ],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS']
 }));
-app.use(express.json());
 
 // Rota para buscar todas as práticas
 app.get('/api/practices', async (req, res) => {
@@ -182,3 +187,4 @@ app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Servidor rodando na porta ${PORT}`);
   console.log(`📊 Supabase conectado!`);
 });
+
