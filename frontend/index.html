@@ -281,6 +281,26 @@
           gap: 15px;
         }
       }
+      .delete-btn {
+        position: absolute;
+        top: 15px;
+        right: 15px;
+        background: var(--danger-color);
+        color: white;
+        border: none;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: background-color 0.3s;
+      }
+
+      .delete-btn:hover {
+        background: #c82333;
+      }
     </style>
   </head>
   <body>
@@ -406,7 +426,8 @@
         const submitBtn = document.getElementById("submit-btn");
 
         // URL da API - ALTERE ESTA URL DEPOIS DO DEPLOY
-        const API_URL = 'https://banco-boas-praticas-backend.onrender.com/api/practices';
+        const API_URL =
+          "https://banco-boas-praticas-backend.onrender.com/api/practices";
 
         // Função para formatar a data
         function formatDate(date) {
@@ -495,26 +516,60 @@
             const practiceElement = document.createElement("div");
             practiceElement.classList.add("practice-card");
             practiceElement.innerHTML = `
-                        <h3>${practice.practice.substring(0, 80)}${
+            <h3>${practice.practice.substring(0, 80)}${
               practice.practice.length > 80 ? "..." : ""
             }</h3>
-                        <div class="practice-meta">
-                            <span><i class="fas fa-user"></i> ${
-                              practice.name
-                            }</span>
-                            <span><i class="fas fa-building"></i> ${
-                              practice.management
-                            }</span>
-                            <span><i class="fas fa-calendar"></i> ${
-                              practice.date
-                            }</span>
-                        </div>
-                        <div class="practice-content">
-                            <p>${practice.practice}</p>
-                        </div>
-                    `;
+            <button class="delete-btn" data-id="${
+              practice._id
+            }" title="Excluir prática">
+                <i class="fas fa-trash"></i>
+            </button>
+            <div class="practice-meta">
+                <span><i class="fas fa-user"></i> ${practice.name}</span>
+                <span><i class="fas fa-building"></i> ${
+                  practice.management
+                }</span>
+                <span><i class="fas fa-calendar"></i> ${practice.date}</span>
+            </div>
+            <div class="practice-content">
+                <p>${practice.practice}</p>
+            </div>
+        `;
             practicesList.appendChild(practiceElement);
           });
+
+          // Adicionar event listeners para os botões de exclusão
+          document.querySelectorAll(".delete-btn").forEach((button) => {
+            button.addEventListener("click", function () {
+              const practiceId = this.getAttribute("data-id");
+              deletePractice(practiceId);
+            });
+          });
+        }
+
+        // Função para excluir uma prática
+        async function deletePractice(id) {
+          if (!confirm("Tem certeza que deseja excluir esta boa prática?")) {
+            return;
+          }
+
+          try {
+            const response = await fetch(`${API_URL}/${id}`, {
+              method: "DELETE",
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+              showNotification("Boa prática excluída com sucesso!");
+              await loadPractices(); // Recarrega a lista
+            } else {
+              throw new Error(result.message);
+            }
+          } catch (error) {
+            console.error("Erro ao excluir prática:", error);
+            showNotification("Erro ao excluir prática: " + error.message, true);
+          }
         }
 
         // Manipular o envio do formulário
@@ -593,4 +648,3 @@
     </script>
   </body>
 </html>
-
