@@ -11,7 +11,8 @@ const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_KEY;
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-// Middleware
+// Middleware - ORDEM CORRETA É IMPORTANTE!
+app.use(express.json()); // ⬅️ DEVE VIR PRIMEIRO
 app.use(cors({
   origin: [
     'https://marvelous-manatee-00afc2.netlify.app',
@@ -187,4 +188,5 @@ app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Servidor rodando na porta ${PORT}`);
   console.log(`📊 Supabase conectado!`);
 });
+
 
