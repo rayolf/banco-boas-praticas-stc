@@ -414,246 +414,254 @@
     </footer>
 
     <script>
-                  console.log("=== INICIANDO APP ===");
-                  console.log("DOM carregado");
-                  document.addEventListener("DOMContentLoaded", function () {
-                    const practiceForm = document.getElementById("practice-form");
-                    const practicesList = document.getElementById("practices-list");
-                    const searchInput = document.getElementById("search-input");
-                    const notification = document.getElementById("notification");
-                    const notificationText = document.getElementById("notification-text");
-                    const totalPractices = document.getElementById("total-practices");
-                    const totalUsers = document.getElementById("total-users");
-                    const totalManagements = document.getElementById("total-managements");
-                    const submitBtn = document.getElementById("submit-btn");
-                    console.log("DOMContentLoaded disparado");
+      console.log("=== INICIANDO APP ===");
+      console.log("DOM carregado");
+      document.addEventListener("DOMContentLoaded", function () {
+        const practiceForm = document.getElementById("practice-form");
+        const practicesList = document.getElementById("practices-list");
+        const searchInput = document.getElementById("search-input");
+        const notification = document.getElementById("notification");
+        const notificationText = document.getElementById("notification-text");
+        const totalPractices = document.getElementById("total-practices");
+        const totalUsers = document.getElementById("total-users");
+        const totalManagements = document.getElementById("total-managements");
+        const submitBtn = document.getElementById("submit-btn");
+        console.log("DOMContentLoaded disparado");
 
-                    // URL da API - ALTERE ESTA URL DEPOIS DO DEPLOY
-                    const API_URL =
-                      "https://banco-boas-praticas-backend.onrender.com/api/practices";
+        // URL da API - ALTERE ESTA URL DEPOIS DO DEPLOY
+        const API_URL =
+          "https://banco-boas-praticas-backend.onrender.com/api/practices";
 
-                    console.log("API_URL configurada como:", API_URL);
+        console.log("API_URL configurada como:", API_URL);
 
-                    // Função para formatar a data
-                    function formatDate(date) {
-                      const day = String(date.getDate()).padStart(2, "0");
-                      const month = String(date.getMonth() + 1).padStart(2, "0");
-                      const year = date.getFullYear();
-                      return `${day}/${month}/${year}`;
-                    }
+        // Função para formatar a data
+        function formatDate(date) {
+          const day = String(date.getDate()).padStart(2, "0");
+          const month = String(date.getMonth() + 1).padStart(2, "0");
+          const year = date.getFullYear();
+          return `${day}/${month}/${year}`;
+        }
 
-                    // Função para mostrar notificação
-                    function showNotification(message, isError = false) {
-                      notificationText.textContent = message;
-                      notification.className = isError
-                        ? "notification error"
-                        : "notification";
-                      notification.style.display = "block";
-                      setTimeout(() => {
-                        notification.style.display = "none";
-                      }, 4000);
-                    }
+        // Função para mostrar notificação
+        function showNotification(message, isError = false) {
+          notificationText.textContent = message;
+          notification.className = isError
+            ? "notification error"
+            : "notification";
+          notification.style.display = "block";
+          setTimeout(() => {
+            notification.style.display = "none";
+          }, 4000);
+        }
 
-                    // Função para carregar práticas do backend
-                    async function loadPractices() {
-                      try {
-                        practicesList.innerHTML =
-                          '<div class="loading"><i class="fas fa-spinner fa-spin"></i> Carregando boas práticas...</div>';
+        // Função para carregar práticas do backend
+        async function loadPractices() {
+          try {
+            practicesList.innerHTML =
+              '<div class="loading"><i class="fas fa-spinner fa-spin"></i> Carregando boas práticas...</div>';
 
-                        const response = await fetch(API_URL);
-                        const result = await response.json();
+            const response = await fetch(API_URL);
+            const result = await response.json();
 
-                        if (result.success) {
-                          renderPractices(result.data);
-                          updateStats(result.data);
-                        } else {
-                          throw new Error(result.message);
-                        }
-                      } catch (error) {
-                        console.error("Erro ao carregar práticas:", error);
-                        practicesList.innerHTML =
-                          '<div class="practice-card"><p>Erro ao carregar práticas. Verifique se o servidor está rodando.</p></div>';
-                        showNotification("Erro ao carregar práticas", true);
-                      }
-                    }
+            if (result.success) {
+              renderPractices(result.data);
+              updateStats(result.data);
+            } else {
+              throw new Error(result.message);
+            }
+          } catch (error) {
+            console.error("Erro ao carregar práticas:", error);
+            practicesList.innerHTML =
+              '<div class="practice-card"><p>Erro ao carregar práticas. Verifique se o servidor está rodando.</p></div>';
+            showNotification("Erro ao carregar práticas", true);
+          }
+        }
 
-                    // Função para buscar práticas
-                    async function searchPractices(term) {
-                      try {
-                        const response = await fetch(
-                          `${API_URL}/search/${encodeURIComponent(term)}`
-                        );
-                        const result = await response.json();
+        // Função para buscar práticas
+        async function searchPractices(term) {
+          try {
+            const response = await fetch(
+              `${API_URL}/search/${encodeURIComponent(term)}`
+            );
+            const result = await response.json();
 
-                        if (result.success) {
-                          renderPractices(result.data);
-                        } else {
-                          throw new Error(result.message);
-                        }
-                      } catch (error) {
-                        console.error("Erro na busca:", error);
-                        showNotification("Erro na busca", true);
-                      }
-                    }
+            if (result.success) {
+              renderPractices(result.data);
+            } else {
+              throw new Error(result.message);
+            }
+          } catch (error) {
+            console.error("Erro na busca:", error);
+            showNotification("Erro na busca", true);
+          }
+        }
 
-                    // Atualizar estatísticas
-                    function updateStats(practices) {
-                      totalPractices.textContent = practices.length;
+        // Atualizar estatísticas
+        function updateStats(practices) {
+          totalPractices.textContent = practices.length;
 
-                      const uniqueUsers = new Set(practices.map((p) => p.name));
-                      totalUsers.textContent = uniqueUsers.size;
+          const uniqueUsers = new Set(practices.map((p) => p.name));
+          totalUsers.textContent = uniqueUsers.size;
 
-                      const uniqueManagements = new Set(practices.map((p) => p.management));
-                      totalManagements.textContent = uniqueManagements.size;
-                    }
+          const uniqueManagements = new Set(practices.map((p) => p.management));
+          totalManagements.textContent = uniqueManagements.size;
+        }
 
-                    // Função para renderizar as boas práticas
-                    function renderPractices(practicesArray) {
-                      practicesList.innerHTML = "";
+        // Função para renderizar as boas práticas
+        function renderPractices(practicesArray) {
+          practicesList.innerHTML = "";
 
-                      if (practicesArray.length === 0) {
-                        practicesList.innerHTML =
-                          '<div class="practice-card"><p>Nenhuma boa prática encontrada. Seja o primeiro a compartilhar!</p></div>';
-                        return;
-                      }
+          if (practicesArray.length === 0) {
+            practicesList.innerHTML =
+              '<div class="practice-card"><p>Nenhuma boa prática encontrada. Seja o primeiro a compartilhar!</p></div>';
+            return;
+          }
 
-                      practicesArray.forEach((practice) => {
-                        const practiceElement = document.createElement("div");
-                        practiceElement.classList.add("practice-card");
-                        practiceElement.innerHTML = `
-                <h3>${practice.practice.substring(0, 80)}${practice.practice.length > 80 ? "..." : ""}</h3>
-                <button class="delete-btn" data-id="${practice.id}" title="Excluir prática">
+          practicesArray.forEach((practice) => {
+            const practiceElement = document.createElement("div");
+            practiceElement.classList.add("practice-card");
+            practiceElement.innerHTML = `
+                <h3>${practice.practice.substring(0, 80)}${
+              practice.practice.length > 80 ? "..." : ""
+            }</h3>
+                <button class="delete-btn" data-id="${
+                  practice.id
+                }" title="Excluir prática">
                     <i class="fas fa-trash"></i>
                 </button>
                 <div class="practice-meta">
                     <span><i class="fas fa-user"></i> ${practice.name}</span>
-                    <span><i class="fas fa-building"></i> ${practice.management}</span>
-                    <span><i class="fas fa-calendar"></i> ${practice.date}</span>
+                    <span><i class="fas fa-building"></i> ${
+                      practice.management
+                    }</span>
+                    <span><i class="fas fa-calendar"></i> ${
+                      practice.date
+                    }</span>
                 </div>
                 <div class="practice-content">
                     <p>${practice.practice}</p>
                 </div>
             `;
-                    `;
-                        practicesList.appendChild(practiceElement);
-                      });
 
-                      // Adicionar event listeners para os botões de exclusão
-                      document.querySelectorAll(".delete-btn").forEach((button) => {
-                        button.addEventListener("click", function () {
-                          const practiceId = this.getAttribute("data-id");
-                          deletePractice(practiceId);
-                        });
-                      });
-                    }
-
-                    async function deletePractice(id) {
-        console.log("🔄 Tentando excluir prática com ID:", id);
-
-        if (!id || id === "undefined") {
-          showNotification("Erro: ID da prática não encontrado", true);
-          return;
-        }
-
-        if (!confirm("Tem certeza que deseja excluir esta boa prática?")) {
-          return;
-        }
-
-        try {
-          console.log("📡 Enviando DELETE para:", `${API_URL}/${id}`);
-
-          const response = await fetch(`${API_URL}/${id}`, {
-            method: 'DELETE'
+            practicesList.appendChild(practiceElement);
           });
 
-          const result = await response.json();
-          console.log("📦 Resposta do servidor:", result);
-
-          if (result.success) {
-            showNotification("Boa prática excluída com sucesso!");
-            await loadPractices(); // Recarrega a lista
-          } else {
-            throw new Error(result.message);
-          }
-        } catch (error) {
-          console.error("❌ Erro ao excluir prática:", error);
-          showNotification("Erro ao excluir prática: " + error.message, true);
+          // Adicionar event listeners para os botões de exclusão
+          document.querySelectorAll(".delete-btn").forEach((button) => {
+            button.addEventListener("click", function () {
+              const practiceId = this.getAttribute("data-id");
+              deletePractice(practiceId);
+            });
+          });
         }
-      }
 
-                    // Manipular o envio do formulário
-                    practiceForm.addEventListener("submit", async function (e) {
-                      e.preventDefault();
+        async function deletePractice(id) {
+          console.log("Tentando excluir prática com ID:", id);
 
-                      const name = document.getElementById("name").value.trim();
-                      const management = document.getElementById("management").value;
-                      const practiceText = document.getElementById("practice").value.trim();
+          if (!id || id === "undefined") {
+            showNotification("Erro: ID da prática não encontrado", true);
+            return;
+          }
 
-                      if (!name || !management || !practiceText) {
-                        showNotification("Preencha todos os campos", true);
-                        return;
-                      }
+          if (!confirm("Tem certeza que deseja excluir esta boa prática?")) {
+            return;
+          }
 
-                      const originalText = submitBtn.innerHTML;
-                      submitBtn.innerHTML =
-                        '<i class="fas fa-spinner fa-spin"></i> Enviando...';
-                      submitBtn.disabled = true;
+          try {
+            console.log("Enviando DELETE para:", `${API_URL}/${id}`);
 
-                      try {
-                        const response = await fetch(API_URL, {
-                          method: "POST",
-                          headers: {
-                            "Content-Type": "application/json",
-                          },
-                          body: JSON.stringify({
-                            name,
-                            management,
-                            practice: practiceText,
-                            date: formatDate(new Date()),
-                          }),
-                        });
+            const response = await fetch(`${API_URL}/${id}`, {
+              method: "DELETE",
+            });
 
-                        const result = await response.json();
+            const result = await response.json();
+            console.log("Resposta do servidor:", result);
 
-                        if (result.success) {
-                          practiceForm.reset();
-                          showNotification("Boa prática cadastrada com sucesso!");
-                          await loadPractices(); // Recarrega a lista
-                        } else {
-                          throw new Error(result.message);
-                        }
-                      } catch (error) {
-                        console.error("Erro:", error);
-                        showNotification(
-                          "Erro ao enviar boa prática: " + error.message,
-                          true
-                        );
-                      } finally {
-                        submitBtn.innerHTML = originalText;
-                        submitBtn.disabled = false;
-                      }
-                    });
+            if (result.success) {
+              showNotification("Boa prática excluída com sucesso!");
+              await loadPractices(); // Recarrega a lista
+            } else {
+              throw new Error(result.message);
+            }
+          } catch (error) {
+            console.error("Erro ao excluir prática:", error);
+            showNotification("Erro ao excluir prática: " + error.message, true);
+          }
+        }
 
-                    // Implementar a funcionalidade de busca
-                    let searchTimeout;
-                    searchInput.addEventListener("input", function () {
-                      const searchTerm = this.value.trim();
+        // Manipular o envio do formulário
+        practiceForm.addEventListener("submit", async function (e) {
+          e.preventDefault();
 
-                      clearTimeout(searchTimeout);
+          const name = document.getElementById("name").value.trim();
+          const management = document.getElementById("management").value;
+          const practiceText = document.getElementById("practice").value.trim();
 
-                      if (searchTerm === "") {
-                        loadPractices();
-                        return;
-                      }
+          if (!name || !management || !practiceText) {
+            showNotification("Preencha todos os campos", true);
+            return;
+          }
 
-                      searchTimeout = setTimeout(() => {
-                        searchPractices(searchTerm);
-                      }, 500);
-                    });
+          const originalText = submitBtn.innerHTML;
+          submitBtn.innerHTML =
+            '<i class="fas fa-spinner fa-spin"></i> Enviando...';
+          submitBtn.disabled = true;
 
-                    // Carregar práticas ao inicializar
-                    loadPractices();
-                  });
+          try {
+            const response = await fetch(API_URL, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                name,
+                management,
+                practice: practiceText,
+                date: formatDate(new Date()),
+              }),
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+              practiceForm.reset();
+              showNotification("Boa prática cadastrada com sucesso!");
+              await loadPractices(); // Recarrega a lista
+            } else {
+              throw new Error(result.message);
+            }
+          } catch (error) {
+            console.error("Erro:", error);
+            showNotification(
+              "Erro ao enviar boa prática: " + error.message,
+              true
+            );
+          } finally {
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+          }
+        });
+
+        // Implementar a funcionalidade de busca
+        let searchTimeout;
+        searchInput.addEventListener("input", function () {
+          const searchTerm = this.value.trim();
+
+          clearTimeout(searchTimeout);
+
+          if (searchTerm === "") {
+            loadPractices();
+            return;
+          }
+
+          searchTimeout = setTimeout(() => {
+            searchPractices(searchTerm);
+          }, 500);
+        });
+
+        // Carregar práticas ao inicializar
+        loadPractices();
+      });
     </script>
   </body>
 </html>
