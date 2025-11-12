@@ -414,6 +414,8 @@
     </footer>
 
     <script>
+      console.log("=== INICIANDO APP ===");
+      console.log("DOM carregado");
       document.addEventListener("DOMContentLoaded", function () {
         const practiceForm = document.getElementById("practice-form");
         const practicesList = document.getElementById("practices-list");
@@ -424,9 +426,13 @@
         const totalUsers = document.getElementById("total-users");
         const totalManagements = document.getElementById("total-managements");
         const submitBtn = document.getElementById("submit-btn");
+        console.log("DOMContentLoaded disparado");
 
         // URL da API - ALTERE ESTA URL DEPOIS DO DEPLOY
-        const API_URL = "https://banco-boas-praticas-backend.onrender.com/api/practices";
+        const API_URL =
+          "https://banco-boas-praticas-backend.onrender.com/api/practices";
+
+        console.log("API_URL configurada como:", API_URL);
 
         // Função para formatar a data
         function formatDate(date) {
@@ -647,4 +653,3 @@
     </script>
   </body>
 </html>
-
