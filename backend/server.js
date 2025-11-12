@@ -4,29 +4,19 @@ const { createClient } = require('@supabase/supabase-js');
 require('dotenv').config();
 
 const app = express();
-const PORT = process.env.PORT || 10000;
+const PORT = process.env.PORT || 5000;
 
 // Configuração Supabase
 const supabaseUrl = process.env.SUPABASE_URL;
 const supabaseKey = process.env.SUPABASE_KEY;
 const supabase = createClient(supabaseUrl, supabaseKey);
 
-// Middleware para parsing JSON - ADICIONAR ESTA LINHA
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
-
-// Middleware CORS - SUPER PERMISSIVO (Produção)
+// Middleware
 app.use(cors({
-  origin: function (origin, callback) {
-    // Permite TODAS as origens em produção
-    callback(null, true);
-  },
-  credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'Accept']
+  origin: ['http://localhost:8000', 'http://127.0.0.1:5500', 'http://localhost:3000', 'file://'],
+  credentials: true
 }));
-
-app.options('*', cors());
+app.use(express.json());
 
 // Rota para buscar todas as práticas
 app.get('/api/practices', async (req, res) => {
@@ -51,19 +41,9 @@ app.get('/api/practices', async (req, res) => {
   }
 });
 
-// Rota para criar nova prática - VERSÃO CORRIGIDA
+// Rota para criar nova prática
 app.post('/api/practices', async (req, res) => {
   try {
-    console.log('Body recebido:', req.body); // Para debug
-    
-    // Verificação mais robusta do body
-    if (!req.body || Object.keys(req.body).length === 0) {
-      return res.status(400).json({
-        success: false,
-        message: 'Corpo da requisição vazio ou inválido'
-      });
-    }
-
     const { name, management, practice, date } = req.body;
 
     if (!name || !management || !practice || !date) {
@@ -76,17 +56,16 @@ app.post('/api/practices', async (req, res) => {
     const { data, error } = await supabase
       .from('practices')
       .insert([
-        { name, management, practice, date }
+        {
+          name,
+          management,
+          practice,
+          date
+        }
       ])
       .select();
 
-    if (error) {
-      console.log('Erro Supabase:', error);
-      return res.status(400).json({
-        success: false,
-        message: 'Erro no banco de dados: ' + error.message
-      });
-    }
+    if (error) throw error;
 
     res.status(201).json({
       success: true,
@@ -94,10 +73,42 @@ app.post('/api/practices', async (req, res) => {
       data: data[0]
     });
   } catch (error) {
-    console.log('Erro geral:', error);
     res.status(400).json({
       success: false,
       message: 'Erro ao cadastrar prática: ' + error.message
+    });
+  }
+});
+
+// Rota para EXCLUIR prática - ADICIONAR ESTA ROTA
+app.delete('/api/practices/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    
+    console.log('Tentando excluir prática ID:', id);
+
+    const { error } = await supabase
+      .from('practices')
+      .delete()
+      .eq('id', id);
+
+    if (error) {
+      console.error('Erro ao excluir:', error);
+      return res.status(400).json({
+        success: false,
+        message: 'Erro ao excluir prática: ' + error.message
+      });
+    }
+
+    res.json({
+      success: true,
+      message: 'Prática excluída com sucesso!'
+    });
+  } catch (error) {
+    console.error('Erro geral ao excluir:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Erro ao excluir prática: ' + error.message
     });
   }
 });
@@ -170,7 +181,4 @@ app.get('/', (req, res) => {
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 Servidor rodando na porta ${PORT}`);
   console.log(`📊 Supabase conectado!`);
-
 });
-
-
